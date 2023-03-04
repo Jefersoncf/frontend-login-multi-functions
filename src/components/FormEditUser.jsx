@@ -1,6 +1,51 @@
-import React from "react";
+import React, { useEffect, useState } from "react";
+import { useNavigate, useParams } from "react-router-dom";
+import axios from "axios";
 
 const FromEditUser = () => {
+  const [name, setName] = useState("");
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
+  const [confPassword, setConfPassword] = useState("");
+  const [role, setRole] = useState("");
+  const [msg, setMsg] = useState("");
+  const navigate = useNavigate();
+  const { id } = useParams();
+
+  useEffect(() => {
+    const getUserById = async () => {
+      try {
+        const response = await axios.get(`http://localhost:4000/users/${id}`);
+        setName(response.data.name);
+        setEmail(response.data.email);
+        setRole(response.data.role);
+      } catch (error) {
+        setMsg(error.response.data.msg);
+      }
+    };
+    getUserById();
+  }, [id]);
+
+  const updateUser = async (e) => {
+    e.preventDefault();
+
+    try {
+      await axios.patch(`http://localhost:4000/users/${id}`, {
+        name: name,
+        email: email,
+        password: password,
+        confPassword: confPassword,
+        role: role,
+      });
+      navigate("/users");
+    } catch (error) {
+      if (error.response) {
+        setMsg(error.response.data.msg);
+      }
+      console.log(error);
+    }
+  };
+
   return (
     <div>
       <h1 className="title">Usuários</h1>
@@ -9,18 +54,31 @@ const FromEditUser = () => {
       <div className="card is-shadowless">
         <div className="card-content">
           <div className="content">
-            <form>
+            <form onSubmit={updateUser}>
+              <p className="has-text-centered">{msg}</p>
               <div className="field">
                 <label className="label">Nome</label>
                 <div className="control">
-                  <input type="text" className="input" placeholder="Nome" />
+                  <input
+                    type="text"
+                    className="input"
+                    value={name}
+                    onChange={(e) => setName(e.target.value)}
+                    placeholder="Nome"
+                  />
                 </div>
               </div>
 
               <div className="field">
                 <label className="label">Email</label>
                 <div className="control">
-                  <input type="text" className="input" placeholder="Email" />
+                  <input
+                    type="text"
+                    className="input"
+                    value={email}
+                    onChange={(e) => setEmail(e.target.value)}
+                    placeholder="Email"
+                  />
                 </div>
               </div>
 
@@ -30,6 +88,8 @@ const FromEditUser = () => {
                   <input
                     type="password"
                     className="input"
+                    value={password}
+                    onChange={(e) => setPassword(e.target.value)}
                     placeholder="******"
                   />
                 </div>
@@ -41,6 +101,8 @@ const FromEditUser = () => {
                   <input
                     type="password"
                     className="input"
+                    value={confPassword}
+                    onChange={(e) => setConfPassword(e.target.value)}
                     placeholder="******"
                   />
                 </div>
@@ -50,7 +112,10 @@ const FromEditUser = () => {
                 <label className="label">Função</label>
                 <div className="control">
                   <div className="select is-fullwidth">
-                    <select>
+                    <select
+                      value={role}
+                      onChange={(e) => setRole(e.target.value)}
+                    >
                       <option value="admin">Admin</option>
                       <option value="user">User</option>
                     </select>
@@ -60,7 +125,9 @@ const FromEditUser = () => {
 
               <div className="field ">
                 <div className="control">
-                  <button className="button is-success">Atualizar</button>
+                  <button type="submit" className="button is-success">
+                    Atualizar
+                  </button>
                 </div>
               </div>
             </form>
